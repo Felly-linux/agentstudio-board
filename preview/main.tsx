@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { Component, useState } from 'react'
+import type { ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { IncidentDashboard } from '../src/components/IncidentDashboard'
 import { ServiceHealth } from '../src/components/ServiceHealth'
@@ -183,11 +184,26 @@ function Preview() {
   )
 }
 
+class ErrorBoundary extends Component<{ label: string; children: ReactNode }, { error: Error | null }> {
+  state = { error: null }
+  static getDerivedStateFromError(error: Error) { return { error } }
+  render() {
+    if (this.state.error)
+      return (
+        <div className="rounded border border-red-800 bg-red-950 px-4 py-3 font-mono text-xs text-red-400">
+          <span className="font-bold">Error in {this.props.label}:</span>{' '}
+          {(this.state.error as Error).message}
+        </div>
+      )
+    return this.props.children
+  }
+}
+
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <p className="text-gray-600 font-mono text-xs mb-2">{label}</p>
-      {children}
+      <ErrorBoundary label={label}>{children}</ErrorBoundary>
     </div>
   )
 }

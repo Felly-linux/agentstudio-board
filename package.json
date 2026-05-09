@@ -14,17 +14,16 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --external react --external react-dom",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --external react --external react-dom --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts --external react --external react-dom --external recharts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --external react --external react-dom --external recharts --watch",
     "type-check": "tsc --noEmit",
     "preview": "vite preview/"
   },
-  "dependencies": {
-    "recharts": "^2.12.7"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "react": "^18 || ^19",
-    "react-dom": "^18 || ^19"
+    "react-dom": "^18 || ^19",
+    "recharts": "^2.12.7"
   },
   "devDependencies": {
     "@types/node": "^20",

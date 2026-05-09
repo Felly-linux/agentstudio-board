@@ -1,7 +1,7 @@
 // Demo data for all M2 components — the hackathon demo runs fully offline
 
 export const mockIncident = {
-  id: 'INC-2024-047',
+  id: 'INC-2026-047',
   title: 'auth-service: latency spike (+400ms)',
   severity: 'P1' as const,
   status: 'investigating' as const,
@@ -15,7 +15,7 @@ export const mockIncident = {
 }
 
 export const mockIncidentP2 = {
-  id: 'INC-2024-046',
+  id: 'INC-2026-046',
   title: 'billing-service: payment processing slow',
   severity: 'P2' as const,
   status: 'identified' as const,
@@ -30,7 +30,7 @@ export const mockIncidentP2 = {
 }
 
 export const mockIncidentResolved = {
-  id: 'INC-2024-045',
+  id: 'INC-2026-045',
   title: 'api-gateway: elevated 5xx errors',
   severity: 'P2' as const,
   status: 'resolved' as const,
@@ -71,7 +71,7 @@ export const mockSprint = {
     { id: 'T-101', title: 'Auth token refresh flow',   status: 'in_flight' as const, assignee: '@maria' },
     { id: 'T-102', title: 'Rate limiting middleware',  status: 'blocked' as const,   assignee: '@carlos', blocker: 'Waiting for infra quota approval' },
     { id: 'T-103', title: 'Session cleanup cron',      status: 'done' as const,      assignee: '@juan' },
-    { id: 'T-104', title: 'DB connection pool config', status: 'blocked' as const,   assignee: '@juan',   blocker: 'Related to current incident INC-2024-047' },
+    { id: 'T-104', title: 'DB connection pool config', status: 'blocked' as const,   assignee: '@juan',   blocker: 'Related to current incident INC-2026-047' },
     { id: 'T-105', title: 'API docs update',           status: 'in_flight' as const, assignee: '@maria' },
     { id: 'T-106', title: 'Migrate to new auth SDK',   status: 'done' as const,      assignee: '@carlos' },
   ],
@@ -81,7 +81,7 @@ export const mockDeployHistory = {
   service: 'auth-service',
   deploys: [
     {
-      id: 'deploy-2024-193',
+      id: 'deploy-2026-193',
       service: 'auth-service',
       version: 'v2.5.0',
       deployedAt: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
@@ -91,7 +91,7 @@ export const mockDeployHistory = {
       changeCount: 8,
     },
     {
-      id: 'deploy-2024-192',
+      id: 'deploy-2026-192',
       service: 'auth-service',
       version: 'v2.4.1',
       deployedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
@@ -101,7 +101,7 @@ export const mockDeployHistory = {
       changeCount: 3,
     },
     {
-      id: 'deploy-2024-191',
+      id: 'deploy-2026-191',
       service: 'auth-service',
       version: 'v2.4.0',
       deployedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),

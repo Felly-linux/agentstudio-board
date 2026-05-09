@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { AgentComponentProps } from '../contracts/types'
+import type { AgentComponentProps } from '../contracts/types'
 import { EmptyState, LoadingState } from './StateGuards'
+import { elapsed } from '../utils'
 
 type DeployStatus = 'success' | 'rolled_back' | 'in_progress'
 
@@ -27,13 +28,6 @@ const statusConfig: Record<DeployStatus, { dot: string; text: string }> = {
   in_progress: { dot: 'bg-yellow-400', text: 'text-yellow-400' },
 }
 
-function elapsed(iso: string): string {
-  const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (secs < 60) return `${secs}s ago`
-  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`
-  return `${Math.floor(secs / 3600)}h ago`
-}
-
 export function DeployHistory({ data, onAction, className }: AgentComponentProps) {
   const { service, deploys } = data as unknown as DeployHistoryData
   const [pendingRollback, setPendingRollback] = useState<Deploy | null>(null)
@@ -41,19 +35,18 @@ export function DeployHistory({ data, onAction, className }: AgentComponentProps
   if (!deploys) return <LoadingState rows={3} />
   if (deploys.length === 0) return <EmptyState message={`No deploys found for ${service ?? 'service'}`} />
 
-  function confirmRollback() {
-    if (!pendingRollback) return
+  function confirmRollback(deploy: Deploy) {
     onAction({
       type: 'rollback',
-      label: `Rollback to ${pendingRollback.version}`,
-      payload: { deployId: pendingRollback.id, service: pendingRollback.service, version: pendingRollback.version },
+      label: `Rollback to ${deploy.version}`,
+      payload: { deployId: deploy.id, service: deploy.service, version: deploy.version },
       requiresConfirmation: false,
     })
     setPendingRollback(null)
   }
 
   return (
-    <div className={`rounded-lg border border-gray-800 bg-gray-950 p-5 font-mono${className ? ` ${className}` : ''}`}>
+    <div className={`rounded-lg border border-gray-800 bg-gray-950 p-5 font-mono ring-1 ring-white/5${className ? ` ${className}` : ''}`}>
       <h3 className="text-sm font-semibold text-gray-300 mb-4">Deploy History — {service}</h3>
 
       {pendingRollback && (
@@ -65,7 +58,7 @@ export function DeployHistory({ data, onAction, className }: AgentComponentProps
           </p>
           <div className="flex gap-2">
             <button
-              onClick={confirmRollback}
+              onClick={() => confirmRollback(pendingRollback)}
               className="px-3 py-1.5 bg-red-700 hover:bg-red-600 rounded text-xs font-medium transition-colors"
             >
               &#8617; Confirm Rollback
@@ -82,7 +75,7 @@ export function DeployHistory({ data, onAction, className }: AgentComponentProps
 
       <div className="space-y-2">
         {deploys.map((d, i) => {
-          const cfg = statusConfig[d.status]
+          const cfg = statusConfig[d.status] ?? statusConfig.success
           const isPending = pendingRollback?.id === d.id
           return (
             <div
@@ -114,7 +107,7 @@ export function DeployHistory({ data, onAction, className }: AgentComponentProps
                       : 'bg-red-900 hover:bg-red-800 border-red-700 text-red-300'
                   }`}
                 >
-                  {isPending ? 'Cancel' : `&#8617; Rollback to ${d.version}`}
+                  {isPending ? 'Cancel' : <>&#8617; Rollback to {d.version}</>}
                 </button>
               </div>
             </div>

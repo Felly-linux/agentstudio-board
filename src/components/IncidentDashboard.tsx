@@ -1,6 +1,7 @@
 'use client'
-import { AgentComponentProps } from '../contracts/types'
+import type { AgentComponentProps } from '../contracts/types'
 import { EmptyState } from './StateGuards'
+import { elapsed } from '../utils'
 
 type IncidentStatus = 'investigating' | 'identified' | 'resolved'
 
@@ -27,11 +28,10 @@ const statusBadge: Record<IncidentStatus, string> = {
   resolved:      'bg-green-800 text-green-200',
 }
 
-function elapsed(iso: string): string {
-  const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (secs < 60) return `${secs}s ago`
-  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`
-  return `${Math.floor(secs / 3600)}h ${Math.floor((secs % 3600) / 60)}m ago`
+function timeLabel(incident: Incident): string {
+  if (incident.status === 'resolved' && incident.resolvedAt)
+    return `resolved ${elapsed(incident.resolvedAt)}`
+  return elapsed(incident.startedAt)
 }
 
 export function IncidentDashboard({ data, onAction, className }: AgentComponentProps) {
@@ -42,28 +42,24 @@ export function IncidentDashboard({ data, onAction, className }: AgentComponentP
   const isResolved = incident.status === 'resolved'
 
   return (
-    <div className={`rounded-lg border ${colors.border} ${isResolved ? 'bg-gray-950 opacity-75' : colors.bg} p-5 font-mono${className ? ` ${className}` : ''}`}>
+    <div className={`rounded-lg border ${colors.border} ${isResolved ? 'bg-gray-950 opacity-75' : colors.bg} p-5 font-mono ring-1 ring-white/5${className ? ` ${className}` : ''}`}>
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <span className={`px-2 py-0.5 rounded text-xs font-bold ${colors.badge}`}>
           {incident.severity}
         </span>
         {incident.status && (
-          <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusBadge[incident.status]}`}>
+          <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusBadge[incident.status] ?? 'bg-gray-800 text-gray-400'}`}>
             {incident.status}
           </span>
         )}
-        <span className={`text-sm font-semibold ${colors.text} flex-1`}>{incident.title}</span>
-        <span className="text-xs text-gray-500">
-          {isResolved && incident.resolvedAt
-            ? `resolved ${elapsed(incident.resolvedAt)}`
-            : elapsed(incident.startedAt)}
-        </span>
+        <span className={`text-sm font-semibold ${colors.text} flex-1 min-w-0 truncate`}>{incident.title}</span>
+        <span className="text-xs text-gray-500 shrink-0">{timeLabel(incident)}</span>
       </div>
 
       <div className="mb-4">
-        <p className="text-xs text-gray-500 mb-1">Servicios afectados</p>
+        <p className="text-xs text-gray-500 mb-1">Affected services</p>
         <div className="flex flex-wrap gap-2">
-          {incident.affectedServices.map(s => (
+          {(incident.affectedServices ?? []).map(s => (
             <span key={s} className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-300">{s}</span>
           ))}
         </div>
@@ -75,9 +71,9 @@ export function IncidentDashboard({ data, onAction, className }: AgentComponentP
           <div className="space-y-1.5 border-l border-gray-800 pl-3">
             {incident.timeline.map((e, i) => (
               <div key={i} className="flex gap-3 text-xs relative">
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-700 absolute -left-4 top-1" />
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-700 absolute -left-[1.05rem] top-1" />
                 <span className="text-gray-600 shrink-0">{new Date(e.at).toLocaleTimeString()}</span>
-                <span className="text-gray-300">{e.event}</span>
+                <span className="text-gray-300 break-words min-w-0">{e.event}</span>
               </div>
             ))}
           </div>
@@ -93,10 +89,10 @@ export function IncidentDashboard({ data, onAction, className }: AgentComponentP
             &#8617; Rollback
           </button>
           <button
-            onClick={() => onAction({ type: 'escalate', label: 'Escalar', payload: { incidentId: incident.id }, requiresConfirmation: true })}
+            onClick={() => onAction({ type: 'escalate', label: 'Escalate', payload: { incidentId: incident.id }, requiresConfirmation: true })}
             className="px-3 py-1.5 bg-yellow-700 hover:bg-yellow-600 rounded text-xs font-medium transition-colors"
           >
-            &#9889; Escalar
+            &#9889; Escalate
           </button>
           <button
             onClick={() => onAction({ type: 'resolve_incident', label: 'Resolve', payload: { incidentId: incident.id }, requiresConfirmation: true })}

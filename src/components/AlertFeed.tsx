@@ -1,6 +1,7 @@
 'use client'
-import { AgentComponentProps } from '../contracts/types'
+import type { AgentComponentProps } from '../contracts/types'
 import { EmptyState, LoadingState } from './StateGuards'
+import { elapsed } from '../utils'
 
 type AlertSeverity = 'critical' | 'warning' | 'info'
 
@@ -19,16 +20,9 @@ interface AlertFeedData {
 }
 
 const severityConfig: Record<AlertSeverity, { dot: string; text: string; border: string; bg: string }> = {
-  critical: { dot: 'bg-red-400', text: 'text-red-400', border: 'border-red-900', bg: 'bg-red-950' },
+  critical: { dot: 'bg-red-400',    text: 'text-red-400',    border: 'border-red-900',    bg: 'bg-red-950'    },
   warning:  { dot: 'bg-yellow-400', text: 'text-yellow-400', border: 'border-yellow-900', bg: 'bg-yellow-950' },
-  info:     { dot: 'bg-blue-400', text: 'text-blue-400', border: 'border-blue-900', bg: 'bg-blue-950' },
-}
-
-function elapsed(iso: string): string {
-  const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (secs < 60) return `${secs}s ago`
-  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`
-  return `${Math.floor(secs / 3600)}h ago`
+  info:     { dot: 'bg-blue-400',   text: 'text-blue-400',   border: 'border-blue-900',   bg: 'bg-blue-950'   },
 }
 
 export function AlertFeed({ data, onAction, className }: AgentComponentProps) {
@@ -38,9 +32,10 @@ export function AlertFeed({ data, onAction, className }: AgentComponentProps) {
 
   const active = alerts.filter(a => !a.resolved)
   const resolved = alerts.filter(a => a.resolved)
+  const activeServices = Array.from(new Set(active.map(a => a.service)))
 
   return (
-    <div className={`rounded-lg border border-gray-800 bg-gray-950 p-5 font-mono${className ? ` ${className}` : ''}`}>
+    <div className={`rounded-lg border border-gray-800 bg-gray-950 p-5 font-mono ring-1 ring-white/5${className ? ` ${className}` : ''}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-gray-300">{title ?? 'Alert Feed'}</h3>
         <div className="flex gap-3 text-xs">
@@ -51,7 +46,8 @@ export function AlertFeed({ data, onAction, className }: AgentComponentProps) {
 
       <div className="space-y-2">
         {alerts.map(a => {
-          const cfg = severityConfig[a.severity]
+          const cfg = severityConfig[a.severity] ?? severityConfig.info
+          const isActiveCritical = !a.resolved && a.severity === 'critical'
           return (
             <div
               key={a.id}
@@ -59,14 +55,14 @@ export function AlertFeed({ data, onAction, className }: AgentComponentProps) {
                 a.resolved ? 'border-gray-800 bg-gray-900 opacity-50' : `${cfg.border} ${cfg.bg}`
               }`}
             >
-              <div className={`w-2 h-2 rounded-full ${cfg.dot} shrink-0 mt-1`} />
+              <div className={`w-2 h-2 rounded-full ${cfg.dot} shrink-0 mt-1 ${isActiveCritical ? 'animate-pulse' : ''}`} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-xs font-bold ${cfg.text}`}>{a.severity.toUpperCase()}</span>
                   <span className="text-xs text-gray-400 bg-gray-800 px-1.5 rounded">{a.service}</span>
                   {a.resolved && <span className="text-xs text-green-700 bg-gray-800 px-1.5 rounded">&#10003; resolved</span>}
                 </div>
-                <p className="text-xs text-gray-300 mt-0.5">{a.message}</p>
+                <p className="text-xs text-gray-300 mt-0.5 break-words">{a.message}</p>
               </div>
               <span className="text-xs text-gray-600 shrink-0 mt-0.5">{elapsed(a.firedAt)}</span>
             </div>
@@ -80,7 +76,7 @@ export function AlertFeed({ data, onAction, className }: AgentComponentProps) {
             onClick={() => onAction({
               type: 'create_incident',
               label: 'Open Incident',
-              payload: { alertIds: active.map(a => a.id), services: Array.from(new Set(active.map(a => a.service))) },
+              payload: { alertIds: active.map(a => a.id), services: activeServices },
               requiresConfirmation: true,
             })}
             className="px-3 py-1.5 bg-red-700 hover:bg-red-600 rounded text-xs font-medium transition-colors"
@@ -91,7 +87,7 @@ export function AlertFeed({ data, onAction, className }: AgentComponentProps) {
             onClick={() => onAction({
               type: 'escalate',
               label: 'Page On-Call',
-              payload: { alertCount: active.length, services: Array.from(new Set(active.map(a => a.service))) },
+              payload: { alertCount: active.length, services: activeServices },
               requiresConfirmation: true,
             })}
             className="px-3 py-1.5 bg-yellow-700 hover:bg-yellow-600 rounded text-xs font-medium transition-colors"

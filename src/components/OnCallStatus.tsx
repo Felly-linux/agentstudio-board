@@ -1,5 +1,5 @@
 'use client'
-import { AgentComponentProps } from '../contracts/types'
+import type { AgentComponentProps } from '../contracts/types'
 import { EmptyState } from './StateGuards'
 
 interface OnCallPerson {
@@ -32,9 +32,10 @@ function PersonRow({
   onPage: () => void
 }) {
   const tierColor = tier === 'Primary' ? 'bg-green-900 text-green-300 border-green-700' : 'bg-gray-800 text-gray-400 border-gray-700'
+  const dotColor = tier === 'Primary' ? 'bg-green-400' : 'bg-gray-500'
   return (
     <div className="flex items-center gap-3 rounded px-3 py-2.5 border border-gray-800 bg-gray-900">
-      <div className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
+      <div className={`w-2 h-2 rounded-full ${dotColor} shrink-0`} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-semibold text-gray-200">{person.name}</span>
@@ -61,11 +62,11 @@ export function OnCallStatus({ data, onAction, className }: AgentComponentProps)
   if (!primary) return <EmptyState message="No on-call data" />
 
   return (
-    <div className={`rounded-lg border border-gray-800 bg-gray-950 p-5 font-mono${className ? ` ${className}` : ''}`}>
+    <div className={`rounded-lg border border-gray-800 bg-gray-950 p-5 font-mono ring-1 ring-white/5${className ? ` ${className}` : ''}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-300">On-Call — {team}</h3>
+        <h3 className="text-sm font-semibold text-gray-300">On-Call — {team ?? 'Unknown Team'}</h3>
         {escalationPolicy && (
-          <span className="text-xs text-gray-700">{escalationPolicy}</span>
+          <span className="text-xs text-gray-500">{escalationPolicy}</span>
         )}
       </div>
 

@@ -60,5 +60,5 @@ export const boardComponents: AgentComponent[] = [
   },
 ]
 
-export type { AgentComponent, AgentComponentProps }
+export type { AgentComponent, AgentComponentProps, AgentAction, AgentDecision } from './contracts/types'
 export { EmptyState, LoadingState } from './components/StateGuards'

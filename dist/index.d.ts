@@ -19,6 +19,13 @@ interface AgentAction {
     payload: Record<string, unknown>;
     requiresConfirmation?: boolean;
 }
+interface AgentDecision {
+    components: Array<{
+        name: string;
+        data: Record<string, unknown>;
+    }>;
+    mode: 'board' | 'copilot' | 'compose';
+}
 
 declare function EmptyState({ message }: {
     message: string;
@@ -29,4 +36,4 @@ declare function LoadingState({ rows }: {
 
 declare const boardComponents: AgentComponent[];
 
-export { type AgentComponent, type AgentComponentProps, EmptyState, LoadingState, boardComponents };
+export { type AgentAction, type AgentComponent, type AgentComponentProps, type AgentDecision, EmptyState, LoadingState, boardComponents };
